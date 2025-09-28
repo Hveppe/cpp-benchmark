@@ -2,6 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <unistd.h>
+#include <vector>
 
 #include "test/test.h"
 
@@ -14,18 +15,28 @@ long getMemoryUsageKB() {
    
 
 template<typename func>
-void benchmark(func algoritmen) {
-    auto startMemory = getMemoryUsageKB();
-    auto startTime = std::chrono::high_resolution_clock::now();
-    algoritmen();
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto endMemory = getMemoryUsageKB();
+void benchmark(func algoritmen, int repetitions = 1000) {
+    long double time = 0.0;
+    long double maxMemoryKB = 0.0;
+    
+    for(int i = 0; i < repetitions; i++) {
+        auto startMemory = getMemoryUsageKB();
+        auto startTime = std::chrono::high_resolution_clock::now();
+        algoritmen(5, 7990271, "hej med dig luder");
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto endMemory = getMemoryUsageKB();
 
-    std::chrono::duration<double, std::milli> duration = endTime - startTime;
-    double memory = endMemory - startMemory; 
+        std::chrono::duration<double, std::milli> duration = endTime - startTime;
+        time += duration.count();
 
-    std::cout << "Time passed: " << duration.count() << " ms" << std::endl;
-    std::cout << "Memory used: " << memory << " kb" << std::endl;
+        long deltaMemory = endMemory - startMemory;
+        if(deltaMemory > maxMemoryKB) {
+            maxMemoryKB = deltaMemory;
+        } 
+    }
+    
+    std::cout << "Averge time passed: " << time/repetitions << " ms" << " over " << repetitions << " repetitions" << std::endl;
+    std::cout << "Averge memory used: " << maxMemoryKB<< " kb" << " over " << repetitions << " repetitions" << std::endl;
 }
 
 int main() {
