@@ -11,8 +11,6 @@ data = pd.read_csv("data.csv")
 x = [i+1 for i in range(size)]
 figure, axis = plt.subplots(2,1)
 
-print(data.head)
-
 axis[0].plot(x, list(data.iloc[:size, 0]))
 axis[0].set_title(f"Tid - {name}")
 
