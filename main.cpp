@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <cstdlib>
 
 #include "test/test.h"
 
@@ -30,6 +31,14 @@ std::string generateRandomString(size_t length) {
         result += chars[dist(gen)];
     }
     return result;
+}
+
+void exportToCSV(std::vector<long double> x, std::vector<long double> y) {
+    std::ofstream file("data.csv");
+    file << "time, memory \n";
+    for(size_t i = 0; i < x.size(); ++i) {
+        file << x[i] << "," << y[i] << "\n";
+    }
 }
 
 template<typename func>
@@ -61,11 +70,8 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
         times.push_back(time / repetitions);
         memorys.push_back(maxMemoryKB);
     }
-
-    for(int i = 0; i < maxLength; i++) {
-        std::cout << "Averge time passed: " << times[i] << " ms" << " over " << repetitions << " repetitions" << std::endl;
-        std::cout << "Averge memory used: " << memorys[i] << " kb" << " over " << repetitions << " repetitions" << std::endl;
-    }
+    exportToCSV(times, memorys);
+    system("python3 plot.py");
 }
 
 int main() {
