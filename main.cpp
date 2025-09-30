@@ -75,5 +75,5 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
 }
 
 int main() {
-    benchmark(EncryptRSA, 100);
+    benchmark(EncryptRSA, 1000);
 }
