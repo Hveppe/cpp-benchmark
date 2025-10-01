@@ -33,9 +33,9 @@ std::string generateRandomString(size_t length) {
     return result;
 }
 
-void exportToCSV(std::vector<long double> x, std::vector<long double> y) {
+void exportToCSV(std::vector<long double> x, std::vector<long double> y, std::string name, int size) {
     std::ofstream file("data.csv");
-    file << "time, memory \n";
+    file << name << "," << size << "\n";
     for(size_t i = 0; i < x.size(); ++i) {
         file << x[i] << "," << y[i] << "\n";
     }
@@ -70,10 +70,10 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
         times.push_back(time / repetitions);
         memorys.push_back(maxMemoryKB);
     }
-    exportToCSV(times, memorys);
+    exportToCSV(times, memorys, "RSA Encrypt", maxLength);
     system("python3 plot.py");
 }
 
 int main() {
-    benchmark(EncryptRSA, 1000);
+    benchmark(EncryptRSA, 100);
 }
