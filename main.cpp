@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <chrono>
 #include <fstream>
@@ -6,14 +7,30 @@
 #include <random>
 #include <string>
 #include <cstdlib>
+#include <atomic>
 
-#include "test/test.h"
+#include "RSA.h"
 
-long getMemoryUsageKB() {
-    std::ifstream statm("/proc/self/statm");
-    long size = 0, resident = 0;
-    statm >> size >> resident;
-    return resident * sysconf(_SC_PAGESIZE) / 1024;
+// Global atomic counter for heap allocations
+std::atomic<size_t> totalAllocatedBytes(0);
+
+void* operator new(std::size_t sz) {
+    totalAllocatedBytes += sz;
+    return malloc(sz);
+}
+
+void operator delete(void* ptr) noexcept {
+    free(ptr);
+}
+
+long double average(const std::vector<long double>& data) {
+    if (data.empty()) return 0.0;
+
+    long double sum = 0.0;
+    for (auto x : data) {
+       sum += x; 
+    } 
+    return sum / data.size();
 }
 
 std::string generateRandomString(size_t length) {
@@ -47,33 +64,32 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
     std::vector<long double> memorys;
     
     for(int length = 0; length < maxLength; length++) {
-        long double time = 0.0;
-        long double maxMemoryKB = 0.0;
-        
+        size_t maxMemoryBytes = 0;
+        std::vector<long double> iterationTimes;
+        std::string text = generateRandomString(length);
+
         for(int i = 0; i < repetitions; i++) {
-            std::string text = generateRandomString(length); 
-
-            auto startMemory = getMemoryUsageKB();
-            auto startTime = std::chrono::high_resolution_clock::now();
+            totalAllocatedBytes = 0;
+            auto startTime = std::chrono::steady_clock::now();
             algoritmen(5, 7990271, text);
-            auto endTime = std::chrono::high_resolution_clock::now();
-            auto endMemory = getMemoryUsageKB();
+            auto endTime = std::chrono::steady_clock::now();
 
-            std::chrono::duration<double, std::milli> duration = endTime - startTime;
-            time += duration.count();
-
-            long deltaMemory = endMemory - startMemory;
-            if(deltaMemory > maxMemoryKB) {
-                maxMemoryKB = deltaMemory;
+            if (totalAllocatedBytes > maxMemoryBytes) {
+                maxMemoryBytes = totalAllocatedBytes;
+            }
+                
+            std::chrono::duration<long double, std::milli> duration = endTime - startTime;
+            if (duration.count() > 0.0 && duration.count() < 1000.0) { // filter absurd spikes
+                iterationTimes.push_back(duration.count());
             } 
         }
-        times.push_back(time / repetitions);
-        memorys.push_back(maxMemoryKB);
+        times.push_back(average(iterationTimes));
+        memorys.push_back(static_cast<long double>(maxMemoryBytes / 1024.0));
     }
     exportToCSV(times, memorys, "RSA Encrypt", maxLength);
     system("python3 plot.py");
 }
 
 int main() {
-    benchmark(EncryptRSA, 100);
+    benchmark(encryptRSA, 300);
 }
