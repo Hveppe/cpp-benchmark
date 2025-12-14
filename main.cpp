@@ -65,12 +65,11 @@ void benchmark(func algoritmen, const std::string& name, int maxLength, int repe
         size_t maxMemoryBytes = 0;
         std::vector<long double> iterationTimes;
         std::string text = generateRandomString(length);
-        std::vector<unsigned char> enCrypt = encryptRSA(text);
 
         for(int i = 0; i < repetitions; i++) {
             totalAllocatedBytes = 0;
             auto startTime = std::chrono::steady_clock::now();
-            algoritmen(enCrypt);
+            algoritmen(text);
             auto endTime = std::chrono::steady_clock::now();
 
             if (totalAllocatedBytes > maxMemoryBytes) {
