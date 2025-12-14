@@ -59,7 +59,7 @@ void exportToCSV(std::vector<long double> x, std::vector<long double> y, std::st
 }
 
 template<typename func>
-void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
+void benchmark(func algoritmen, const std::string& name, int maxLength, int repetitions = 100) {
     std::vector<long double> times;
     std::vector<long double> memorys;
     
@@ -67,11 +67,12 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
         size_t maxMemoryBytes = 0;
         std::vector<long double> iterationTimes;
         std::string text = generateRandomString(length);
+        std::vector<unsigned char> enCrypt = encryptRSA(text);
 
         for(int i = 0; i < repetitions; i++) {
             totalAllocatedBytes = 0;
             auto startTime = std::chrono::steady_clock::now();
-            algoritmen(5, 7990271, text);
+            algoritmen(enCrypt);
             auto endTime = std::chrono::steady_clock::now();
 
             if (totalAllocatedBytes > maxMemoryBytes) {
@@ -86,7 +87,7 @@ void benchmark(func algoritmen, int maxLength, int repetitions = 1000) {
         times.push_back(average(iterationTimes));
         memorys.push_back(static_cast<long double>(maxMemoryBytes / 1024.0));
     }
-    exportToCSV(times, memorys, "RSA Encrypt", maxLength);
+    exportToCSV(times, memorys, name, maxLength);
     system("python3 plot.py");
 }
 
