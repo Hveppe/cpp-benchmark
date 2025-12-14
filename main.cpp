@@ -9,8 +9,6 @@
 #include <cstdlib>
 #include <atomic>
 
-#include "RSA.h"
-
 // Global atomic counter for heap allocations
 std::atomic<size_t> totalAllocatedBytes(0);
 
@@ -89,8 +87,4 @@ void benchmark(func algoritmen, const std::string& name, int maxLength, int repe
     }
     exportToCSV(times, memorys, name, maxLength);
     system("python3 plot.py");
-}
-
-int main() {
-    benchmark(encryptRSA, 300);
 }
